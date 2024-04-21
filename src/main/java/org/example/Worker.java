@@ -1,48 +1,34 @@
 package org.example;
 
-import java.util.concurrent.TimeUnit;
 
-public class Worker implements Runnable{
 
-    private final int id;
-    private int totalResourcesMined;
+public interface Worker extends Runnable {
 
-    public Worker(int id) {
-        this.id = id;
-        this.totalResourcesMined = 0;
-    }
+    int getId();
 
-    @Override
-    public void run() {
-        try {
-            while (true) {
-                mine();
-                rest();
-            }
-        } catch (InterruptedException e) {
-            System.out.println("Worker " + id + " has left");
-        }
-    }
+    int getTotalMinedResources();
 
-    private void mine() throws InterruptedException {
-        System.out.println("Worker " + id + " is mining...");
-        TimeUnit.SECONDS.sleep(5);
-        totalResourcesMined += 10;
-        System.out.println("Worker " + id + " has received 10 resources");
-    }
+    int getTotalReceivedMoney();
 
-    private void rest() throws InterruptedException {
-        System.out.println("Worker " + id + " is resting...");
-        TimeUnit.SECONDS.sleep(3);
-        paySalary();
-    }
+    void addResources(int resources);
 
-    private void paySalary() throws InterruptedException {
-        int salary = totalResourcesMined / 2; // 5 resources for every 10 seconds of mining
-        System.out.println("Worker " + id + " has received " + salary + " resources out of " + totalResourcesMined + " resources");
+    void removeMoney(int amount);
 
-        if (totalResourcesMined >= MiningGame.totalResources) {
-            throw new InterruptedException(); // Worker leaves if resources are depleted
-        }
-    }
+    int getTotalWorkingTime();
+
+    int getTotalRestingTime();
+
+    void rest() throws InterruptedException;
+
+    void paySalary() throws InterruptedException;
+
+    void stopWorker();
+
+    boolean isStopped();
+
+    long getHireTime(); // Метод за вземане на времето на стартиране
+
+    long getFireTime();
+
+    boolean isMineExhausted();
 }
