@@ -5,6 +5,8 @@ import java.util.*;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MiningGame {
 
@@ -13,15 +15,15 @@ public class MiningGame {
     private static final List<Worker> workers = new ArrayList<>();
     private static long startTime;
     private static long endTime;
-    private static Worker workerInterface;
-
-    public MiningGame(Worker workerInterface) {
-        MiningGame.workerInterface = workerInterface;
-    }
-
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+
+        System.out.println("КОМАНДИ:\n" +
+                "За добавяне на нов работник  [+] \n" +
+                "За премахване на работник [-2] (минус/цифра. Цифрата е Идентификатора(ID) на съответния работник)\n" +
+                "За изход [q]");
+        System.out.println();
 
         System.out.print("Изберете капацитета на мината (брой ресурси): ");
         totalResourcesInMine = scanner.nextInt();
@@ -39,6 +41,18 @@ public class MiningGame {
             executor.submit(worker);
         }
 
+        // Schedule resource check task to run every second
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(() -> {
+            if (totalResourcesInMine <= 0) {
+                System.out.println("Ресурсите в мината са изчерпани !");
+                printStatistic();
+                endTime = System.currentTimeMillis();
+                executor.shutdownNow(); // Stop all workers
+                scheduler.shutdown(); // Stop the scheduler
+            }
+        }, 0, 1, TimeUnit.MICROSECONDS); // Run every second
+
         // Listen for commands to add or remove workers
         while (true) {
             String input = scanner.next();
@@ -53,31 +67,32 @@ public class MiningGame {
                             Worker newWorker = new WorkerImpl(newWorkerId);
                             workers.add(newWorker);
                             executor.submit(newWorker);
-                            System.out.println("Добавихте нов работник (Worker " + newWorkerId + ")");
+                            System.out.println("\n--->Добавихте нов работник (Worker " + newWorkerId + ")\n");
                         } else {
-                            System.out.println("Достигнахте максималния брой работници за мината");
+                            System.out.println("\nДостигнахте максималния брой работници за мината\n");
                         }
                         break;
                     case "q":
                         printStatistic();
                         executor.shutdownNow();
                         endTime = System.currentTimeMillis();
+                        totalResourcesInMine =0;
                         return;
                     default:
-                        System.out.println("Невалидна команда !");
+                        System.out.println("\nНевалидна команда !\n");
                 }
             } else if (command.length == 2 && command[0].equals("-")) {
                 int workerId = Integer.parseInt(command[1]);
                 if (workerId > 0 && workerId <= workers.size()) {
                     Worker fireWorker = workers.get(workerId - 1);
                     fireWorker.stopWorker();
-                    System.out.println("Отстранен работник (Worker " + fireWorker.getId() + ")");
+                    System.out.println("\n<---Отстранен работник (Worker " + fireWorker.getId() + ")\n");
                     mineSize--;
                 } else {
-                    System.out.println("Невалиден идентификатор на работник!");
+                    System.out.println("\nНевалиден идентификатор на работник!\n");
                 }
             } else {
-                System.out.println("Невалидна команда !");
+                System.out.println("\nНевалидна команда !\n"+input);
             }
         }
     }
