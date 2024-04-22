@@ -99,10 +99,10 @@ public class MiningGame {
 
     public static void printStatistic() {
         System.out.println("------  СТАТИСТИКА -------");
-        System.out.println("Начало на копаенето: " + formatTime(startTime));
-        System.out.println("Край на копаенето: " + formatTime(endTime));
+        System.out.println("Начало на добива: " + formatTime(startTime));
+        System.out.println("Край на добива: " + formatTime(endTime));
         System.out.println("Мината е разполагала с " + totalResourcesInMine + " ресурса.");
-        System.out.println("Изработено време: " + getTotalMiningTime());
+        System.out.println("Общо време за добиването на всички ресурси: " + getTotalMiningTime());
 
         System.out.println("-------- РАБОТНИЦИ --------");
         for (Worker worker : workers) {
