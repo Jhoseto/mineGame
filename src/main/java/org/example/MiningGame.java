@@ -42,7 +42,7 @@ public class MiningGame {
         }
 
         // Schedule resource check task to run every second
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(mineSize);
         scheduler.scheduleAtFixedRate(() -> {
             if (totalResourcesInMine <= 0) {
                 System.out.println("Ресурсите в мината са изчерпани !");
@@ -108,7 +108,7 @@ public class MiningGame {
         for (Worker worker : workers) {
             System.out.println("Миньор " + worker.getId());
             System.out.println("Начало на работа: " + formatTime(worker.getHireTime()));
-            System.out.println("Изкопани ресурси: " + worker.getTotalMinedResources());
+            System.out.println("Участвал в добива на " + worker.getTotalMinedResources()+" от общия брой ресурси");
             System.out.println("Получени пари: $" + worker.getTotalReceivedMoney());
             System.out.println("Изработено време: " + worker.getTotalWorkingTime() + " сек.");
             System.out.println("Време в почивка: " + worker.getTotalRestingTime() + " сек.");
