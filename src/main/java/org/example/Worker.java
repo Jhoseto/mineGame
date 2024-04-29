@@ -2,12 +2,12 @@ package org.example;
 
 public class Worker extends Thread {
 
-    private long id;
+    private final long id;
     private int totalMinedResources;
     private double totalReceivedMoney;
     private int totalWorkingTime;
     private int totalRestingTime;
-    private long hireTime;
+    private final long hireTime;
     private long fireTime;
     private volatile boolean isStopped = false; //volatile Гарантира видимост от всички нишки
     private final MiningGame miningGame;
@@ -19,18 +19,16 @@ public class Worker extends Thread {
         this.hireTime = System.currentTimeMillis();
     }
 
-    public synchronized void run() {
+    public void run() {
         try {
             while (miningGame.getTotalResourcesInMine() > 0 && !isStopped) {
                 mine();
-                rest();
                 paySalary();
+                rest();
                 System.out.println("Left resources " + miningGame.getTotalResourcesInMine());
             }
         } catch(InterruptedException e){
-
             System.out.println("Worker " + id + " has left");
-        } finally{
             fireTime = System.currentTimeMillis();
         }
     }
@@ -46,7 +44,6 @@ public class Worker extends Thread {
     public synchronized void rest() throws InterruptedException {
         if (!isStopped) {
             addResources(10);
-            totalMinedResources += 10;
             totalWorkingTime += 5;
             miningGame.setTotalResourcesInMine(miningGame.getTotalResourcesInMine()-10);
             System.out.println("Left"+miningGame.getTotalResourcesInMine());
@@ -56,9 +53,8 @@ public class Worker extends Thread {
         }
     }
 
-    public void paySalary() {
-        double salary = 2.5; // 2.5 $ for every 5 sec on work
-        totalReceivedMoney += salary;
+    public synchronized void paySalary() {
+        addSalary(2.5); // 2.5 $ for every 5 sec on work
         System.out.println("Worker " + id + " has received $" + totalReceivedMoney + " for total " + totalMinedResources + " mined resources");
     }
     public long getId() {
@@ -78,6 +74,9 @@ public class Worker extends Thread {
 
     public void addResources(int resources) {
         totalMinedResources += resources;
+    }
+    public void addSalary(double salary){
+        totalReceivedMoney += salary;
     }
 
 
@@ -105,5 +104,6 @@ public class Worker extends Thread {
     public long getFireTime() {
         return fireTime;
     }
+
 
 }

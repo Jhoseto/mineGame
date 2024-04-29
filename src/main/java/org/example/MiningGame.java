@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class MiningGame {
 
@@ -13,8 +14,9 @@ public class MiningGame {
     private long startTime;
     private long endTime;
     private final List<Worker> workers = new ArrayList<>();
+    private ExecutorService executor = Executors.newFixedThreadPool(10);
 
-    public MiningGame(int totalResourcesInMine, int mineSize) {
+    public MiningGame(int totalResourcesInMine, int mineSize) throws InterruptedException {
         setMineSize(mineSize);
         setTotalResourcesInMine(totalResourcesInMine);
     }
@@ -22,17 +24,18 @@ public class MiningGame {
     public void startGame(int mineSize) {
         setTotalResourcesInMineOnStart(totalResourcesInMine);
         Scanner scanner = new Scanner(System.in);
-        ExecutorService executor = Executors.newFixedThreadPool(10);
+        executor = Executors.newFixedThreadPool(10);
         startTime = System.currentTimeMillis();
 
-        // Start with initial workers
+        // Start with initial workers from mineSize
         for (int i = 1; i <= mineSize; i++) {
             Worker worker = new Worker(i, this);
             workers.add(worker);
             executor.submit(worker);
         }
 
-        while (true) {
+        while (getTotalResourcesInMine() > 0) {
+
             String input = scanner.next();
             String[] command = input.split("");
 
@@ -73,6 +76,7 @@ public class MiningGame {
                 System.out.println("\nНевалидна команда !\n" + input);
             }
         }
+        printStatistic();
     }
 
     public void printStatistic() {
@@ -116,9 +120,13 @@ public class MiningGame {
         return totalResourcesInMine;
     }
 
-    public MiningGame setTotalResourcesInMine(int totalResourcesInMine) {
+    public synchronized void setTotalResourcesInMine(int totalResourcesInMine) throws InterruptedException {
+        if (totalResourcesInMine <= 0){
+            endTime = System.currentTimeMillis();
+            executor.shutdownNow();
+            printStatistic();
+        }
         this.totalResourcesInMine = totalResourcesInMine;
-        return this;
     }
 
     public MiningGame setTotalResourcesInMineOnStart(int totalResourcesInMineOnStart) {
